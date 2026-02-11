@@ -1,0 +1,32 @@
+
+---
+
+## ✅ `.gitignore` (copy everything)
+
+```gitignore
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+.env/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+
+# Build / packaging
+dist/
+build/
+*.spec
+
+# Logs
+*.log
+
