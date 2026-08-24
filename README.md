@@ -37,11 +37,7 @@ Built with Python, Tkinter, OpenCV, and Pillow.
 ## Requirements
 
 - Python **3.8+**
-- ffmpeg installed on your system
-
-### Python libraries
-- `opencv-python`
-- `Pillow`
+- ffmpeg, opencv-python, Pillow
 
 ---
 
