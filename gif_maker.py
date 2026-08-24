@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from PIL import Image, ImageDraw, ImageFont, ImageTk
@@ -279,15 +280,29 @@ class GifMaker:
         threading.Thread(target=self.play_loop, daemon=True).start()
 
     def play_loop(self):
-        t = self.start_var.get()
+        start = self.start_var.get()
         end = self.end_var.get()
-        step = 1 / self.fps
 
-        while self.playing and t <= end:
-            frame = self.get_frame_by_time(t)
-            if frame is None:
+        # Seek ONCE to the start frame, then read sequentially from there.
+        # Re-seeking every frame (the old approach) forces the decoder to
+        # jump back to a keyframe and decode forward each time, which is
+        # slow and was the real cause of the "slow motion" preview.
+        start_frame = min(int(start * self.fps), self.total_frames - 1)
+        self.cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
+
+        play_start = time.time()
+        frame_num = 0
+
+        while self.playing:
+            elapsed = time.time() - play_start
+            if start + elapsed > end:
                 break
 
+            ok, frame = self.cap.read()
+            if not ok:
+                break
+
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             img = Image.fromarray(frame)
             img = self.draw_text(img)
             img.thumbnail((400, 300))
@@ -296,8 +311,15 @@ class GifMaker:
             self.canvas.delete("all")
             self.canvas.create_image(200, 150, image=self.photo)
 
-            time.sleep(step)
-            t += step
+            frame_num += 1
+            # Pace against a wall clock instead of a fixed sleep, so that
+            # any time spent decoding/drawing this frame is subtracted
+            # from the wait before the next one (keeps real playback
+            # speed instead of drifting slower with every frame).
+            next_frame_due = frame_num / self.fps
+            sleep_time = next_frame_due - (time.time() - play_start)
+            if sleep_time > 0:
+                time.sleep(sleep_time)
 
         self.playing = False
         self.play_btn.config(text="Play Trimmed Range")
