@@ -38,12 +38,3 @@ Built with Python, Tkinter, OpenCV, and Pillow.
 
 - Python **3.8+**
 - ffmpeg, opencv-python, Pillow
-
----
-
-## Installation
-
-### 1. Install Python dependencies
-
-```bash
-pip install opencv-python Pillow
